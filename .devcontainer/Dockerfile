@@ -11,23 +11,28 @@ RUN apt-get update && \
 ARG USERNAME=theia
 ARG USER_UID=1000
 ARG USER_GID=${USER_UID}
-ARG DOCKER_GID=999
 
 # Create the user with passwordless sudo privileges (be resilient if group exists)
-# Create the docker group with the specified GID to match the host for socket access
-RUN groupadd --gid ${DOCKER_GID} docker-host 2>/dev/null || true \
-    && groupadd --gid ${USER_GID} ${USERNAME} 2>/dev/null || true \
+# The mounted Docker socket in this environment is owned by root:root, so the
+# dev user must also be able to read/write through group 0.
+RUN groupadd --gid ${USER_GID} ${USERNAME} 2>/dev/null || true \
     && useradd --uid ${USER_UID} --gid ${USER_GID} -m ${USERNAME} -s /bin/bash \
     && usermod -aG sudo ${USERNAME} \
     && usermod -aG docker ${USERNAME} \
-    && usermod -aG docker-host ${USERNAME} \
+    && usermod -aG root ${USERNAME} \
     && echo "${USERNAME} ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/${USERNAME} \
     && chmod 0440 /etc/sudoers.d/${USERNAME}
 
 WORKDIR /project
 
-# Make sure pip and wheel are modern
-RUN pip install --upgrade pip wheel
+# Make sure pip, wheel, and uv are modern
+RUN pip install --upgrade pip wheel uv
+
+# Auto-activate the workspace virtualenv for new interactive shells when present.
+RUN printf '%s\n' \
+    'if [ -f "$HOME/venv/bin/activate" ]; then' \
+    '  . "$HOME/venv/bin/activate"' \
+    'fi' >> /home/${USERNAME}/.bashrc
 
 ENV TERM=xterm-256color
 EXPOSE 8000

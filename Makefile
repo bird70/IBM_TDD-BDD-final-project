@@ -1,3 +1,5 @@
+VENV_DIR ?= $(HOME)/venv
+
 .PHONY: all help install venv run
 
 help: ## Display this help
@@ -12,12 +14,21 @@ build: ## Build a Docker image
 
 venv: ## Create a Python virtual environment
 	$(info Creating Python 3 virtual environment...)
-	python3 -m venv ~/venv
+	@if command -v uv >/dev/null 2>&1; then \
+		uv venv "$(VENV_DIR)"; \
+	else \
+		python3 -m venv "$(VENV_DIR)"; \
+	fi
 
 install: ## Install Python dependencies
 	$(info Installing dependencies...)
-	python3 -m pip install --upgrade pip wheel
-	pip install -r requirements.txt
+	@if [ -x "$(VENV_DIR)/bin/python" ] && command -v uv >/dev/null 2>&1; then \
+		uv pip install --python "$(VENV_DIR)/bin/python" -r requirements.txt; \
+	elif [ -x "$(VENV_DIR)/bin/python" ]; then \
+		"$(VENV_DIR)/bin/python" -m pip install -r requirements.txt; \
+	else \
+		python3 -m pip install -r requirements.txt; \
+	fi
 
 lint: ## Run the linter
 	$(info Running linting...)

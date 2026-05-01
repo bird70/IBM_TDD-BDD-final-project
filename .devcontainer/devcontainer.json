@@ -2,20 +2,17 @@
 	"name": "Theia Cloud",
 	"dockerFile": "Dockerfile",
 	"context": "..",
-	"build": {
-		"args": {
-			"DOCKER_GID": "999"
-		}
-	},
 	"remoteUser": "theia",
 	"workspaceFolder": "/project",
     "workspaceMount": "source=${localWorkspaceFolder},target=/project,type=bind,consistency=delegated",
-	"runArgs": ["-h","theia"],
+	"runArgs": ["-h","theia","--add-host=host.docker.internal:host-gateway"],
     "remoteEnv": {
       "FLASK_DEBUG": "true",
       "FLASK_APP": "service:app",
 	  "PYTHONIOENCODING": "utf-8",
-	  "DATABASE_URI": "postgresql://postgres:postgres@host.docker.internal:5432/postgres"
+	  "DATABASE_URI": "postgresql://postgres:postgres@host.docker.internal:5432/postgres",
+	  "PATH": "/home/theia/venv/bin:${containerEnv:PATH}",
+	  "VIRTUAL_ENV": "/home/theia/venv"
     },
 	"customizations": {
 		"vscode": {
@@ -39,8 +36,7 @@
 			]
 		}
 	},
-	// "postCreateCommand": "sudo pip install -r requirements.txt",
-	"postCreateCommand": "docker version || true",
+	"postCreateCommand": "bash /project/.devcontainer/bootstrap.sh",
 	"mounts": [
 		"source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind"
 	]
