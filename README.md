@@ -59,3 +59,25 @@ If you need `make db` to run `docker run` from inside the devcontainer, rebuild 
 	```
 
 After rebuilding the devcontainer with the socket mounted, `make db` should be able to use the host Docker daemon.
+
+## Current Devcontainer Workflow
+
+The devcontainer now bootstraps Python dependencies automatically on create:
+
+- If `~/venv` does not exist, `make venv` is run.
+- The virtual environment is activated.
+- `make install` is run (uses `uv` when available, otherwise falls back to `pip`).
+
+Database and test commands:
+
+```bash
+make db      # starts PostgreSQL (postgres:15-alpine)
+make dbrm    # stops/removes PostgreSQL container
+make tests   # runs nose unit tests
+make behave  # runs BDD scenarios
+```
+
+Notes:
+
+- The PostgreSQL container uses volume mount `/var/lib/postgresql` with `postgres:15-alpine`.
+- If `make db` fails due to an old/stale container name, run `make dbrm` and then `make db` again.
