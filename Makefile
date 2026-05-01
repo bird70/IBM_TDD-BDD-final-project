@@ -41,6 +41,11 @@ tests: ## Run the unit tests
 	$(info Running tests...)
 	nosetests -vv --with-coverage --cover-package=service
 
+.PHONY: behave
+behave: ## Run the BDD tests
+	$(info Running BDD tests...)
+	behave
+
 run: ## Run the service
 	$(info Starting service...)
 	honcho start
