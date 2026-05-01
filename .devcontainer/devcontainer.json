@@ -2,6 +2,11 @@
 	"name": "Theia Cloud",
 	"dockerFile": "Dockerfile",
 	"context": "..",
+	"build": {
+		"args": {
+			"DOCKER_GID": "999"
+		}
+	},
 	"remoteUser": "theia",
 	"workspaceFolder": "/project",
     "workspaceMount": "source=${localWorkspaceFolder},target=/project,type=bind,consistency=delegated",
@@ -9,7 +14,8 @@
     "remoteEnv": {
       "FLASK_DEBUG": "true",
       "FLASK_APP": "service:app",
-	  "PYTHONIOENCODING": "utf-8"
+	  "PYTHONIOENCODING": "utf-8",
+	  "DATABASE_URI": "postgresql://postgres:postgres@host.docker.internal:5432/postgres"
     },
 	"customizations": {
 		"vscode": {

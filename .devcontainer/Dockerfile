@@ -11,12 +11,16 @@ RUN apt-get update && \
 ARG USERNAME=theia
 ARG USER_UID=1000
 ARG USER_GID=${USER_UID}
+ARG DOCKER_GID=999
 
 # Create the user with passwordless sudo privileges (be resilient if group exists)
-RUN groupadd --gid ${USER_GID} ${USERNAME} 2>/dev/null || true \
+# Create the docker group with the specified GID to match the host for socket access
+RUN groupadd --gid ${DOCKER_GID} docker-host 2>/dev/null || true \
+    && groupadd --gid ${USER_GID} ${USERNAME} 2>/dev/null || true \
     && useradd --uid ${USER_UID} --gid ${USER_GID} -m ${USERNAME} -s /bin/bash \
     && usermod -aG sudo ${USERNAME} \
     && usermod -aG docker ${USERNAME} \
+    && usermod -aG docker-host ${USERNAME} \
     && echo "${USERNAME} ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/${USERNAME} \
     && chmod 0440 /etc/sudoers.d/${USERNAME}
 
