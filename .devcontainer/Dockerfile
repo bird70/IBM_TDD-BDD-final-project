@@ -5,7 +5,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 # Install common tools and build deps
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-        sudo vim git zip tree curl wget ca-certificates build-essential gcc libpq-dev \
+        sudo vim git zip tree curl wget ca-certificates build-essential gcc libpq-dev docker.io docker-cli \
     && rm -rf /var/lib/apt/lists/*
 
 ARG USERNAME=theia
@@ -16,6 +16,7 @@ ARG USER_GID=${USER_UID}
 RUN groupadd --gid ${USER_GID} ${USERNAME} 2>/dev/null || true \
     && useradd --uid ${USER_UID} --gid ${USER_GID} -m ${USERNAME} -s /bin/bash \
     && usermod -aG sudo ${USERNAME} \
+    && usermod -aG docker ${USERNAME} \
     && echo "${USERNAME} ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/${USERNAME} \
     && chmod 0440 /etc/sudoers.d/${USERNAME}
 

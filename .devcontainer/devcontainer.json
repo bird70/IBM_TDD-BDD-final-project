@@ -5,7 +5,7 @@
 	"remoteUser": "theia",
 	"workspaceFolder": "/project",
     "workspaceMount": "source=${localWorkspaceFolder},target=/project,type=bind,consistency=delegated",
-    "runArgs": ["-h","theia"],
+	"runArgs": ["-h","theia"],
     "remoteEnv": {
       "FLASK_DEBUG": "true",
       "FLASK_APP": "service:app",
@@ -34,7 +34,8 @@
 		}
 	},
 	// "postCreateCommand": "sudo pip install -r requirements.txt",
-	"features": {
-		"docker-in-docker": "latest"
-	}
+	"postCreateCommand": "docker version || true",
+	"mounts": [
+		"source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind"
+	]
 }
