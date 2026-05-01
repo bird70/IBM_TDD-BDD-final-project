@@ -39,7 +39,7 @@ lint: ## Run the linter
 .PHONY: tests
 tests: ## Run the unit tests
 	$(info Running tests...)
-	nosetests -vv --with-spec --spec-color --with-coverage --cover-package=service
+	nosetests -vv --with-coverage --cover-package=service
 
 run: ## Run the service
 	$(info Starting service...)
@@ -55,5 +55,5 @@ db: ## Run PostgreSQL in Docker
 	docker run -d --name postgres \
 		-p 5432:5432 \
 		-e POSTGRES_PASSWORD=postgres \
-		-v postgres:/var/lib/postgresql/data \
-		postgres:alpine
+		-v postgres:/var/lib/postgresql \
+		postgres:15-alpine
