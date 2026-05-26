@@ -27,7 +27,7 @@ import os
 import logging
 import unittest
 from decimal import Decimal
-from service.models import Product, Category, db
+from service.models import Product, Category, db, DataValidationError
 from service import app
 from tests.factories import ProductFactory
 
@@ -104,3 +104,116 @@ class TestProductModel(unittest.TestCase):
     #
     # ADD YOUR TEST CASES HERE
     #
+    def test_update_a_product(self):
+        """It should update a product"""
+        product = ProductFactory()
+        product.id = None
+        product.create()
+        self.assertIsNotNone(product.id)
+        # Update the product
+        product.name = "Updated product"
+        product.update()
+        # Check that it was updated
+        updated_product = Product.find(product.id)
+        self.assertEqual(updated_product.name, "Updated product")
+
+    def test_delete_a_product(self):
+        """It should delete a product"""
+        product = ProductFactory()
+        product.id = None
+        product.create()
+        self.assertIsNotNone(product.id)
+        # Delete the product
+        product.delete()
+        # Check that it was deleted
+        self.assertIsNone(Product.find(product.id))
+
+    def test_serialize_and_deserialize(self):
+        """It should serialize a Product and deserialize into a new Product"""
+        product = ProductFactory()
+        product.id = None
+        product.create()
+
+        data = product.serialize()
+        self.assertIn("id", data)
+        self.assertEqual(data["name"], product.name)
+        self.assertEqual(Decimal(data["price"]), product.price)
+        self.assertEqual(data["category"], product.category.name)
+
+        # Deserialize into a new product
+        new_product = Product()
+        new_product.deserialize(data)
+        self.assertEqual(new_product.name, product.name)
+        self.assertEqual(new_product.description, product.description)
+        self.assertEqual(new_product.category, product.category)
+
+    def test_deserialize_missing_field_raises(self):
+        """It should raise DataValidationError for missing fields"""
+        product = Product()
+        data = {"name": "X", "price": "1.00", "available": True, "category": Category.CLOTHS.name}
+        with self.assertRaises(DataValidationError):
+            product.deserialize(data)
+
+    def test_deserialize_invalid_available_type_raises(self):
+        """It should raise DataValidationError for invalid available type"""
+        product = Product()
+        data = {"name": "X", "description": "Y", "price": "1.00", "available": "yes", "category": Category.CLOTHS.name}
+        with self.assertRaises(DataValidationError):
+            product.deserialize(data)
+
+    def test_deserialize_invalid_category_raises(self):
+        """It should raise DataValidationError for invalid category"""
+        product = Product()
+        data = {"name": "X", "description": "Y", "price": "1.00", "available": True, "category": "INVALID"}
+        with self.assertRaises(DataValidationError):
+            product.deserialize(data)
+
+    def test_update_without_id_raises(self):
+        """It should raise DataValidationError when update() is called with no id"""
+        product = ProductFactory()
+        # ensure id is None (not persisted)
+        product.id = None
+        with self.assertRaises(DataValidationError):
+            product.update()
+
+    def test_query_helpers(self):
+        """It should exercise the query helper methods"""
+        # Create multiple products
+        p1 = ProductFactory(name="Widget", price=Decimal("10.00"), category=Category.TOOLS)
+        p1.id = None
+        p1.create()
+        p2 = ProductFactory(name="Widget", price=Decimal("12.00"), category=Category.TOOLS)
+        p2.id = None
+        p2.create()
+        p3 = ProductFactory(name="Gadget", price=Decimal("10.00"), category=Category.FOOD)
+        p3.id = None
+        p3.create()
+
+        # all()
+        products = Product.all()
+        self.assertGreaterEqual(len(products), 3)
+
+        # find()
+        found = Product.find(p1.id)
+        self.assertIsNotNone(found)
+        self.assertEqual(found.name, p1.name)
+
+        # find_by_name()
+        widgets = Product.find_by_name("Widget").all()
+        self.assertEqual(len(widgets), 2)
+
+        # find_by_price() with Decimal and string
+        price_matches = Product.find_by_price(Decimal("10.00")).all()
+        self.assertTrue(any(p.id == p1.id for p in price_matches))
+        price_matches_str = Product.find_by_price("10.00").all()
+        self.assertTrue(any(p.id == p1.id for p in price_matches_str))
+
+        # find_by_availability()
+        avail_matches = Product.find_by_availability(True).all()
+        self.assertIsInstance(avail_matches, list)
+
+        # find_by_category()
+        cat_matches = Product.find_by_category(Category.TOOLS).all()
+        self.assertTrue(any(p.id == p1.id for p in cat_matches))
+
+    
