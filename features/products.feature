@@ -102,6 +102,8 @@ Scenario: List All Products
     Then I should see the message "Success"
     And I should see "Hat" in the search results
     And I should see "Shoes" in the search results
+    And I should see "Big Mac" in the search results
+    And I should see "Sheets" in the search results
 
 Scenario: Search by Name
     When I visit the "Home Page"
