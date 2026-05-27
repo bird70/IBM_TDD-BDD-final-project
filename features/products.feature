@@ -109,16 +109,15 @@ Scenario: Search by Name
     And I set the "Name" to "Hat"
     And I press the "Search" button
     Then I should see the message "Success"
-    And I should see "Hat" in the search results
+    And I should see "A red fedora" in the search results
 
 Scenario: Search by Category
     When I visit the "Home Page"
     And I press the "Clear" button
-    And I select "Cloths" in the "Category" dropdown
+    And I select "Food" in the "Category" dropdown
     And I press the "Search" button
     Then I should see the message "Success"
-    And I should see "Hat" in the search results
-    And I should see "Shoes" in the search results
+    And I should see "Big Mac" in the search results
 
 Scenario: Search by Availability
     When I visit the "Home Page"
@@ -127,3 +126,5 @@ Scenario: Search by Availability
     And I press the "Search" button
     Then I should see the message "Success"
     And I should see "Hat" in the search results
+    And I should see "Big Mac" in the search results
+    And I should see "Sheets" in the search results
