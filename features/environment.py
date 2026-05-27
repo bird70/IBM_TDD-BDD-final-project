@@ -1,6 +1,7 @@
 """
 Environment for Behave Testing
 """
+import logging
 from os import getenv
 from selenium import webdriver
 from selenium.common.exceptions import WebDriverException
@@ -18,13 +19,27 @@ def before_all(context):
     if 'firefox' in DRIVER:
         try:
             context.driver = get_firefox()
-        except WebDriverException:
-            context.driver = get_chrome()
+        except WebDriverException as primary_error:
+            logging.exception("Failed to create Firefox driver; falling back to Chrome")
+            try:
+                context.driver = get_chrome()
+            except WebDriverException as fallback_error:
+                raise WebDriverException(
+                    f"Failed to create Firefox driver ({primary_error}) "
+                    f"and fallback Chrome driver ({fallback_error})"
+                ) from fallback_error
     else:
         try:
             context.driver = get_chrome()
-        except WebDriverException:
-            context.driver = get_firefox()
+        except WebDriverException as primary_error:
+            logging.exception("Failed to create Chrome driver; falling back to Firefox")
+            try:
+                context.driver = get_firefox()
+            except WebDriverException as fallback_error:
+                raise WebDriverException(
+                    f"Failed to create Chrome driver ({primary_error}) "
+                    f"and fallback Firefox driver ({fallback_error})"
+                ) from fallback_error
     context.driver.implicitly_wait(context.wait_seconds)
     context.config.setup_logging()
 
