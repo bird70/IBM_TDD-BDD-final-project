@@ -3,6 +3,7 @@ Environment for Behave Testing
 """
 from os import getenv
 from selenium import webdriver
+from selenium.common.exceptions import WebDriverException
 
 WAIT_SECONDS = int(getenv('WAIT_SECONDS', '30'))
 BASE_URL = getenv('BASE_URL', 'http://localhost:8080')
@@ -15,9 +16,15 @@ def before_all(context):
     context.wait_seconds = WAIT_SECONDS
     # Select either Chrome or Firefox
     if 'firefox' in DRIVER:
-        context.driver = get_firefox()
+        try:
+            context.driver = get_firefox()
+        except WebDriverException:
+            context.driver = get_chrome()
     else:
-        context.driver = get_chrome()
+        try:
+            context.driver = get_chrome()
+        except WebDriverException:
+            context.driver = get_firefox()
     context.driver.implicitly_wait(context.wait_seconds)
     context.config.setup_logging()
 

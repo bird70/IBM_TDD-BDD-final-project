@@ -105,6 +105,38 @@ def step_impl(context, element_name):
 ##################################################################
 
 ## UPDATE CODE HERE ##
+@when('I press the "{button_name}" button')
+def step_impl(context, button_name):
+    """Click a button by its text-based id naming convention"""
+    button_id = button_name.lower().replace(' ', '_') + '-btn'
+    button = WebDriverWait(context.driver, context.wait_seconds).until(
+        expected_conditions.element_to_be_clickable((By.ID, button_id))
+    )
+    button.click()
+
+
+@then('I should see the message "{message}"')
+def step_impl(context, message):
+    """Check the flash message area for a message"""
+    element = WebDriverWait(context.driver, context.wait_seconds).until(
+        expected_conditions.text_to_be_present_in_element(
+            (By.ID, 'flash_message'),
+            message
+        )
+    )
+    assert(element)
+
+
+@then('I should see "{text_string}" in the search results')
+def step_impl(context, text_string):
+    """Check the search results table contains text"""
+    element = WebDriverWait(context.driver, context.wait_seconds).until(
+        expected_conditions.text_to_be_present_in_element(
+            (By.ID, 'search_results'),
+            text_string
+        )
+    )
+    assert(element)
 
 ##################################################################
 # This code works because of the following naming convention:
