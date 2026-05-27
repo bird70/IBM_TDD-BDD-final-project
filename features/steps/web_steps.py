@@ -109,11 +109,7 @@ def step_impl(context, element_name):
 def step_impl(context, button_name):
     """Click a button by its text-based id naming convention"""
     button_id = button_name.lower().replace(' ', '-') + '-btn'
-    button = WebDriverWait(context.driver, context.wait_seconds).until(
-        expected_conditions.element_to_be_clickable((By.ID, button_id))
-    )
-    button.click()
-
+    context.driver.find_element_by_id(button_id).click()
 
 @then('I should see the message "{message}"')
 def step_impl(context, message):
@@ -126,14 +122,18 @@ def step_impl(context, message):
     )
     assert(element)
 
+@then('I should not see "{name}" in the results')
+def step_impl(context, name):
+    element = context.driver.find_element_by_id('search_results')
+    assert(name not in element.text)
 
-@then('I should see "{text_string}" in the search results')
-def step_impl(context, text_string):
+@then('I should see "{name}" in the search results')
+def step_impl(context, name):
     """Check the search results table contains text"""
     element = WebDriverWait(context.driver, context.wait_seconds).until(
         expected_conditions.text_to_be_present_in_element(
             (By.ID, 'search_results'),
-            text_string
+            name
         )
     )
     assert(element)
@@ -164,3 +164,4 @@ def step_impl(context, element_name, text_string):
     )
     element.clear()
     element.send_keys(text_string)
+

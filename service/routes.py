@@ -115,9 +115,9 @@ def list_products():
     available = request.args.get("available")
     if available is not None:
         if available.lower() in ["true", "1", "yes"]:
-            query = query.filter(Product.available == True)
+            query = query.filter(Product.available.is_(True))
         elif available.lower() in ["false", "0", "no"]:
-            query = query.filter(Product.available == False)
+            query = query.filter(Product.available.is_(False))
 
     products = query.all()
     result = [p.serialize() for p in products]
@@ -136,7 +136,7 @@ def get_product(product_id):
 
 
 @app.route("/products/<int:product_id>", methods=["PUT"])
-def update_product(product_id):
+def update_products(product_id):
     """Updates a Product by id"""
     app.logger.info("Request to Update a Product with id: %s", product_id)
     check_content_type("application/json")
@@ -149,12 +149,13 @@ def update_product(product_id):
     data = request.get_json()
     app.logger.info("Processing: %s", data)
     product.deserialize(data)
+    product.id = product_id
     product.update()
     return jsonify(product.serialize()), status.HTTP_200_OK
 
 
 @app.route("/products/<int:product_id>", methods=["DELETE"])
-def delete_product(product_id):
+def delete_products(product_id):
     """Deletes a Product by id"""
     app.logger.info("Request to Delete a Product with id: %s", product_id)
     product = Product.find(product_id)

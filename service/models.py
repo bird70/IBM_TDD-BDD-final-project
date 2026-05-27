@@ -31,8 +31,11 @@ available (boolean) - True for products that are available for adoption
 import logging
 from enum import Enum
 from decimal import Decimal
-from flask import Flask
+from typing import TYPE_CHECKING
 from flask_sqlalchemy import SQLAlchemy
+
+if TYPE_CHECKING:
+    from flask import Flask
 
 logger = logging.getLogger("flask.app")
 
@@ -97,6 +100,15 @@ class Product(db.Model):
         db.session.add(self)
         db.session.commit()
 
+    def read(self):
+        """
+        Reads a Product from the database
+        """
+        logger.info("Reading %s", self.name)
+        if not self.id:
+            raise DataValidationError("Update called with empty ID field")
+        db.session.commit()
+
     def update(self):
         """
         Updates a Product to the database
@@ -156,7 +168,7 @@ class Product(db.Model):
     ##################################################
 
     @classmethod
-    def init_db(cls, app: Flask):
+    def init_db(cls, app: "Flask"):
         """Initializes the database session
 
         :param app: the Flask app
